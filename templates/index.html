@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISPU Data</title>
+</head>
+<body>
+    <h1>ISPU Data</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>ESP ID</th>
+                <th>PM10</th>
+                <th>PM25</th>
+                <th>CO</th>
+                <th>HC</th>
+                <th>ISPU PM10</th>
+                <th>ISPU PM25</th>
+                <th>ISPU CO</th>
+                <th>ISPU HC</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in data %}
+            <tr>
+                <td>{{ record.id }}</td>
+                <td>{{ record.esp_id }}</td>
+                <td>{{ record.pm10 }}</td>
+                <td>{{ record.pm25 }}</td>
+                <td>{{ record.co }}</td>
+                <td>{{ record.hc }}</td>
+                <td>{{ record.ispu_pm10 }}</td>
+                <td>{{ record.ispu_pm25 }}</td>
+                <td>{{ record.ispu_co }}</td>
+                <td>{{ record.ispu_hc }}</td>
+                <td>{{ record.timestamp }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
