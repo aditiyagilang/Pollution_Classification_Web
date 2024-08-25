@@ -5,7 +5,7 @@ from mysql.connector import Error
 
 db_config = {
     'host': 'localhost',
-    'database': 'air_quality',
+    'database': 'polusi_db',
     'user': 'root',
     'password': ''  
 }

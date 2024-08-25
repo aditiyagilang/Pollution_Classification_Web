@@ -1,7 +1,7 @@
-
 from flask import Flask, request, jsonify, render_template
-from db import connect_db  # Import fungsi connect_db dari db.py
+from db import connect_db  
 
+app = Flask(__name__)
 
 @app.route('/api/esp/data', methods=['POST'])
 def receive_data():
@@ -11,35 +11,51 @@ def receive_data():
     pm25 = data.get('PM25')
     co = data.get('CO')
     hc = data.get('HC')
-    o3 = data.get('O3')  # Tambahkan data O3
+    o3 = data.get('O3')  
     ispu_pm10 = data.get('ISPU_PM10')
     ispu_pm25 = data.get('ISPU_PM25')
     ispu_co = data.get('ISPU_CO')
     ispu_hc = data.get('ISPU_HC')
-    ispu_o3 = data.get('ISPU_O3')  # Tambahkan ISPU-O3
+    ispu_o3 = data.get('ISPU_O3')  
 
     connection = connect_db()
     if connection:
         cursor = connection.cursor()
-        query = """
-            INSERT INTO sensor_data (esp_id, pm10, pm25, co, hc, o3, ispu_pm10, ispu_pm25, ispu_co, ispu_hc, ispu_o3)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(query, (esp_id, pm10, pm25, co, hc, o3, ispu_pm10, ispu_pm25, ispu_co, ispu_hc, ispu_o3))
-        connection.commit()
-        cursor.close()
-        connection.close()
-        return jsonify({"status": "success"}), 200
+        try:
+            # Insert into data_polusi table
+            insert_polusi_query = """
+                INSERT INTO data_polusi (esp_id, pm10, pm25, co, hc, o3)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(insert_polusi_query, (esp_id, pm10, pm25, co, hc, o3))
+            polusi_id = cursor.lastrowid  # Get the last inserted id
+
+            # Insert into ispu_data table
+            insert_ispu_query = """
+                INSERT INTO ispu_data (polusi_id, ispu_pm10, ispu_pm25, ispu_co, ispu_hc, ispu_o3)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(insert_ispu_query, (polusi_id, ispu_pm10, ispu_pm25, ispu_co, ispu_hc, ispu_o3))
+
+            # Commit the transaction
+            connection.commit()
+
+            return jsonify({"status": "success"}), 200
+        except Exception as e:
+            connection.rollback()  # Rollback in case of error
+            return jsonify({"status": "failed", "reason": str(e)}), 500
+        finally:
+            cursor.close()
+            connection.close()
     else:
         return jsonify({"status": "failed", "reason": "database connection error"}), 500
-  
-   
+
 @app.route('/')
 def ispu_data():
     connection = connect_db()
     if connection:
         cursor = connection.cursor(dictionary=True)
-        select_query = "SELECT * FROM sensor_data"
+        select_query = "SELECT * FROM data_polusi"
         cursor.execute(select_query)
         records = cursor.fetchall()
         cursor.close()
@@ -48,6 +64,5 @@ def ispu_data():
 
     return "Error connecting to the database", 500
     
-
 if __name__ == '__main__':
-    app.run(host='192.168.2.12', port=5000)
+    app.run(host='192.168.192.128', port=5000)
