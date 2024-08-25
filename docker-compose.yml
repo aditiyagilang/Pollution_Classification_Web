@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8006:8006"
+    volumes:
+      - .:/app
+    # environment:
+    #   - FLASK_ENV=development
+    #   - FLASK_APP=app.py
+    # command: flask run --host=0.0.0.0
+    container_name: pollution-web
+    network_mode: bridge
+    restart: unless-stopped
