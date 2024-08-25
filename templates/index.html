@@ -22,14 +22,13 @@
                 <th>ISPU CO</th>
                 <th>ISPU HC</th>
                 <th>ISPU O3</th>
-                <th>ISPU HC</th>
-                <th>Timestamp</th>
+                <th>Timestamp</th> <!-- Hanya tampilkan ini jika timestamp ada di database -->
             </tr>
         </thead>
         <tbody>
             {% for record in data %}
             <tr>
-                <td>{{ record.id }}</td>
+                <td>{{ record.data_id }}</td> <!-- Ubah ke data_id -->
                 <td>{{ record.esp_id }}</td>
                 <td>{{ record.pm10 }}</td>
                 <td>{{ record.pm25 }}</td>
@@ -41,8 +40,7 @@
                 <td>{{ record.ispu_co }}</td>
                 <td>{{ record.ispu_hc }}</td>
                 <td>{{ record.ispu_o3 }}</td>
-                
-                <td>{{ record.timestamp }}</td>
+                <td>{{ record.timestamp }}</td> <!-- Pastikan kolom ini ada atau hapus jika tidak ada -->
             </tr>
             {% endfor %}
         </tbody>
