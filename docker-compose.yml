@@ -5,6 +5,8 @@ services:
       - "8006:8006"
     volumes:
       - .:/app
+    env_file:
+      - .env
     # environment:
     #   - FLASK_ENV=development
     #   - FLASK_APP=app.py
