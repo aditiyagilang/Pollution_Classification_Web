@@ -66,6 +66,7 @@ def ispu_data():
             SELECT dp.*, ispu.ispu_pm10, ispu.ispu_pm25, ispu.ispu_co, ispu.ispu_hc, ispu.ispu_o3
             FROM data_polusi dp
             JOIN ispu_data ispu ON dp.data_id = ispu.polusi_id
+            ORDER BY dp.data_id DESC
         """
         cursor.execute(select_query)
         records = cursor.fetchall()
