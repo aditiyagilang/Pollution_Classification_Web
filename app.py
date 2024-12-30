@@ -56,6 +56,9 @@ def receive_data():
     else:
         return jsonify({"status": "failed", "reason": "database connection error"}), 500
 
+@app.route('/home')
+def home():
+    return render_template('home.html')
 
 @app.route('/')
 def ispu_data():
