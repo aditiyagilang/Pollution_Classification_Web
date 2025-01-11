@@ -1,10 +1,14 @@
 from flask import Flask, request, jsonify, render_template
 from db import connect_db  
 from datetime import datetime
+import pandas as pd
+import joblib
+from flask import Flask, request, jsonify, render_template
+
 
 app = Flask(__name__)
 
-
+model = joblib.load('svc_rbf.pkl')
 
 @app.route('/api/esp/data', methods=['POST'])
 def receive_data():
@@ -59,6 +63,52 @@ def receive_data():
 @app.route('/home')
 def home():
     return render_template('home.html')
+
+@app.route('/data')
+def data():
+    return render_template('dashboard.html')
+
+@app.route('/lokasi')
+def location():
+    return render_template('location.html')
+
+@app.route('/polusi')
+def pollution():
+    return render_template('pollution.html')
+
+@app.route('/klasifikasi')
+def clasification():
+    return render_template('clasification.html')
+
+import pandas as pd
+
+@app.route('/predict', methods=['GET', 'POST'])
+def predict():
+    if request.method == 'POST':
+        # Ambil input dari form
+        pm10 = float(request.form.get('pm10', 0))
+        pm25 = float(request.form.get('pm25', 0))
+        co = float(request.form.get('co', 0))
+        hc = float(request.form.get('hc', 0))
+        o3 = float(request.form.get('o3', 0))
+        no2 = float(request.form.get('no2', 0))  # Tambahkan no2
+        so2 = float(request.form.get('so2', 0))  # Tambahkan so2
+        
+        # Siapkan data untuk prediksi
+        input_data = pd.DataFrame([[pm10, pm25, co, hc, o3, no2, so2]], 
+                                  columns=['pm10', 'pm25', 'co', 'hc', 'o3', 'no2', 'so2'])
+        
+        # Prediksi menggunakan model
+        prediction = model.predict(input_data)
+        prediction_result = prediction[0]
+        
+        return render_template('predict.html', prediction=prediction_result)
+    
+    return render_template('predict.html', prediction=None)
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
 @app.route('/')
 def ispu_data():
