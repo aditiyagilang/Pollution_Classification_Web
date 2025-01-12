@@ -1,3 +1,5 @@
 flask
 db
-mysql.connector
+mysql-connector-python
+pandas
+joblib
