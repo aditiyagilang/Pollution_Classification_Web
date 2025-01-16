@@ -218,7 +218,7 @@ def add_esp():
         try:
             # Query untuk insert data ke tabel esp
             insert_query = """
-                INSERT INTO esp (id, nama) 
+                INSERT INTO esp (esp_id, location) 
                 VALUES (%s, %s)
             """
             cursor.execute(insert_query, (esp_id, nama))
@@ -252,8 +252,8 @@ def edit_esp(id):
             # Query untuk update data lokasi berdasarkan ID
             update_query = """
                 UPDATE esp
-                SET nama = %s
-                WHERE id = %s
+                SET location = %s
+                WHERE esp_id = %s
             """
             cursor.execute(update_query, (nama, id))
             connection.commit()
@@ -267,6 +267,7 @@ def edit_esp(id):
             connection.close()
     else:
         return jsonify({"status": "failed", "reason": "database connection error"}), 500
+    
 @app.route('/delete-esp/<int:id>', methods=['DELETE'])
 def delete_esp(id):
     # Koneksi ke database
@@ -277,7 +278,7 @@ def delete_esp(id):
             # Query untuk menghapus data lokasi berdasarkan ID
             delete_query = """
                 DELETE FROM esp
-                WHERE id = %s
+                WHERE esp_id = %s
             """
             cursor.execute(delete_query, (id,))
             connection.commit()
