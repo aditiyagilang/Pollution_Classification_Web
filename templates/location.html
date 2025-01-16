@@ -1,161 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sidebar dan Tabel</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    integrity="sha384-9ndCyUa5lG2lubx7KdDh5GE1bHfn9S3r5MWR6Wt5oE2saNQFgeN9T8YbWZ7s1eD3"
-    crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/data-table.css') }}">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar dan Tabel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-9ndCyUa5lG2lubx7KdDh5GE1bHfn9S3r5MWR6Wt5oE2saNQFgeN9T8YbWZ7s1eD3"
+      crossorigin="anonymous">
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/data-table.css') }}">
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&display=swap"
-    rel="stylesheet">
-  
-</head>
-<body>
-  <div class="container">
-    <!-- Sidebar -->
-    <div class="sidebar">
-     
-      <ul class="menu">
-        <li class="menu-item " onclick="window.location.href='/data'">
-            <img class="icon"    src="{{ url_for('static', filename='assets/icon_home.png') }}" />
-          <span>Dashboard</span>
-        </li>
-        <li class="menu-item active" onclick="window.location.href='/lokasi'">
-            <img class="icon" src="{{ url_for('static', filename='assets/icon_map.png') }}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&display=swap"
+      rel="stylesheet">
+
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+
+        <ul class="menu">
+          <li class="menu-item " onclick="window.location.href='/data'">
+            <img class="icon"
+              src="{{ url_for('static', filename='assets/icon_home.png') }}" />
+            <span>Dashboard</span>
+          </li>
+          <li class="menu-item active" onclick="window.location.href='/lokasi'">
+            <img class="icon"
+              src="{{ url_for('static', filename='assets/icon_map.png') }}" />
             <span>Lokasi</span>
           </li>
-        <!-- <li class="menu-item" onclick="window.location.href='/polusi'">
+          <!-- <li class="menu-item" onclick="window.location.href='/polusi'">
           <img class="icon"    src="{{ url_for('static', filename='assets/icon_polusi.png') }}" />
           <span>Polusi</span>
         </li> -->
-        <li class="menu-item" onclick="window.location.href='/klasifikasi'">
-            <img class="icon"    src="{{ url_for('static', filename='assets/icon_kasifikasi.png') }}" />
-          <span>Klasifikasi</span>
-        </li>
-       
-      </ul>
-      <div class="exit">
-        <img class="icon"    src="{{ url_for('static', filename='assets/icon_exit.png') }}" />
-        <span>Exit</span>
+          <li class="menu-item" onclick="window.location.href='/klasifikasi'">
+            <img class="icon"
+              src="{{ url_for('static', filename='assets/icon_kasifikasi.png') }}" />
+            <span>Klasifikasi</span>
+          </li>
+
+        </ul>
+        <div class="exit">
+          <img class="icon"
+            src="{{ url_for('static', filename='assets/icon_exit.png') }}" />
+          <span>Exit</span>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <h1>Tabel Data</h1>
+        <div class="table-actions">
+          <button class="btn add-btn" id="openModalBtn">
+            <img class="icon"
+              src="{{ url_for('static', filename='assets/add-button.png') }}"
+              alt="Tambah Icon" />
+            Tambah
+          </button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Lokasi</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for lokasi in lokasi_list %}
+            <tr>
+              <td>{{ lokasi.id }}</td>
+              <td>{{ lokasi.nama }}</td>
+              <td>
+                <button class="btn edit-btn"
+                  onclick="openEditModal('{{ lokasi.id }}', '{{ lokasi.nama }}')">
+                  <img class="icon"
+                    src="{{ url_for('static', filename='assets/edit.png') }}"
+                    alt="Edit Icon" />
+                  Edit
+                </button>
+                <button class="btn delete-btn"
+                  onclick="openDeleteModal('{{ lokasi.id }}', '{{ lokasi.nama }}')">
+                  <img class="icon"
+                    src="{{ url_for('static', filename='assets/delete.png') }}"
+                    alt="Delete Icon" />
+                  Delete
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
       </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-      <h1>Tabel Data</h1>
-      <div class="table-actions">
-        <button class="btn add-btn" id="openModalBtn">
-          <img class="icon" src="{{ url_for('static', filename='assets/add-button.png') }}" alt="Tambah Icon" />
-          Tambah
-        </button>
+    <!-- Modal Add Data -->
+    <div class="modal" id="addModal">
+      <div class="modal-content">
+        <span class="close-btn" id="closeModalBtn">&times;</span>
+        <h2>Tambah Lokasi</h2>
+        <form id="addForm">
+          <div class="form-group">
+            <label for="id">ID</label>
+            <input type="text" id="id" name="id" placeholder="Masukkan ID"
+              required />
+          </div>
+          <div class="form-group">
+            <label for="nama">Nama Lokasi</label>
+            <input type="text" id="nama" name="nama"
+              placeholder="Masukkan Nama Lokasi" required />
+          </div>
+          <button type="submit" class="btn submit-btn">Submit</button>
+        </form>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Lokasi</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>INDONESIA</td>
-            <td>
-              <button class="btn edit-btn" onclick="openEditModal('1', 'INDONESIA')">
-                <img class="icon" src="{{ url_for('static', filename='assets/edit.png') }}" alt="Edit Icon" />
-                Edit
-              </button>
-              <button class="btn delete-btn" onclick="openDeleteModal('1', 'INDONESIA')">
-                <img class="icon" src="{{ url_for('static', filename='assets/delete.png') }}" alt="Delete Icon" />
-                Delete
-              </button>
-            </td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>JAKARTA</td>
-            <td>
-              <button class="btn edit-btn" onclick="openEditModal('2', 'JAKARTA')">
-                <img class="icon" src="{{ url_for('static', filename='assets/edit.png') }}" alt="Edit Icon" />
-                Edit
-              </button>
-              <button class="btn delete-btn" onclick="openDeleteModal('1', 'INDONESIA')">
-                <img class="icon" src="{{ url_for('static', filename='assets/delete.png') }}" alt="Delete Icon" />
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
     </div>
-  </div>
 
-
-  <div class="modal" id="addModal">
-    <div class="modal-content">
-      <span class="close-btn" id="closeModalBtn">&times;</span>
-      <h2>Tambah Lokasi</h2>
-      <form id="addForm">
-        <div class="form-group">
-          <label for="id">ID</label>
-          <input type="text" id="id" name="id" placeholder="Masukkan ID" required />
-        </div>
-        <div class="form-group">
-          <label for="nama">Nama Lokasi</label>
-          <input type="text" id="nama" name="nama" placeholder="Masukkan Nama Lokasi" required />
-        </div>
-        <button type="submit" class="btn submit-btn">Submit</button>
-      </form>
+    <!-- Modal Edit Data -->
+    <div class="modal" id="editModal">
+      <div class="modal-content">
+        <span class="close-btn" id="closeEditModalBtn">&times;</span>
+        <h2>Edit Lokasi</h2>
+        <form id="editForm">
+          <div class="form-group">
+            <label for="edit-id">ID</label>
+            <input type="text" id="edit-id" name="id" readonly />
+          </div>
+          <div class="form-group">
+            <label for="edit-nama">Nama Lokasi</label>
+            <input type="text" id="edit-nama" name="nama" required />
+          </div>
+          <button type="submit" class="btn submit-btn"
+            style="background-color: #ffcc5c;">Simpan</button>
+        </form>
+      </div>
     </div>
-  </div>
-
-  <div class="modal" id="editModal">
-    <div class="modal-content">
-      <!-- Tombol Close -->
-      <span class="close-btn" id="closeEditModalBtn">&times;</span>
-      <h2>Edit Lokasi</h2>
-      <form id="editForm">
-        <div class="form-group">
-          <label for="edit-id">ID</label>
-          <input type="text" id="edit-id" name="id" readonly />
-        </div>
-        <div class="form-group">
-          <label for="edit-nama">Nama Lokasi</label>
-          <input type="text" id="edit-nama" name="nama" required />
-        </div>
-        <button type="submit" class="btn submit-btn" style="background-color: #ffcc5c;">Simpan</button>
-      </form>
-    </div>
-  </div>
-
 
     <!-- Modal Delete -->
+    <!-- Modal Konfirmasi Hapus -->
     <div class="modal" id="deleteModal">
       <div class="modal-content">
         <!-- Tombol Close -->
         <span class="close-btn" id="closeDeleteModalBtn">&times;</span>
         <h2>Konfirmasi Hapus</h2>
-        <p>Apakah Anda yakin ingin menghapus lokasi <strong id="delete-nama"></strong>?</p>
+        <p>Apakah Anda yakin ingin menghapus lokasi <strong
+            id="delete-nama"></strong>?</p>
         <form id="deleteForm">
           <input type="hidden" id="delete-id" name="id" />
           <div class="modal-buttons">
-        
-            <button type="submit" class="btn submit-btn" style="background-color: #f85c4c; ">Hapus</button>
+            <button type="submit" class="btn submit-btn"
+              style="background-color: #f85c4c;">Hapus</button>
           </div>
         </form>
       </div>
     </div>
-  
 
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
+    <script>
+      // Membuka Modal
+      document.getElementById('openAddModalBtn').addEventListener('click', function() {
+        document.getElementById('addModal').style.display = 'block';
+      });
+    
+      // Menutup Modal
+      document.getElementById('closeModalBtn').addEventListener('click', function() {
+        document.getElementById('addModal').style.display = 'none';
+      });
+    
+      // Kirim Data Form ke Server
+      document.getElementById('addForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+    
+        const id = document.getElementById('id').value;
+        const nama = document.getElementById('nama').value;
+    
+        // Data yang akan dikirim
+        const data = {
+          id: id,
+          nama: nama
+        };
+    
+        // Mengirim data dengan AJAX
+        fetch('/add-esp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+          if (result.status === 'success') {
+            alert('Lokasi berhasil ditambahkan');
+            document.getElementById('addModal').style.display = 'none';
+            document.getElementById('addForm').reset(); // Reset form
+          } else {
+            alert('Gagal menambahkan lokasi: ' + result.reason);
+          }
+        })
+        .catch(error => {
+          alert('Error: ' + error);
+        });
+      });
+    </script>
+
+    <script>
+  // Menutup Modal Edit
+  document.getElementById('closeEditModalBtn').addEventListener('click', function() {
+    document.getElementById('editModal').style.display = 'none';
+  });
+
+  // Fungsi untuk membuka modal edit dengan data yang ada
+  function openEditModal(id, nama) {
+    document.getElementById('edit-id').value = id;   // Set ID
+    document.getElementById('edit-nama').value = nama; // Set Nama Lokasi
+    document.getElementById('editModal').style.display = 'block'; // Buka modal
+  }
+
+  // Mengirimkan data edit ke server
+  document.getElementById('editForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const id = document.getElementById('edit-id').value;
+    const nama = document.getElementById('edit-nama').value;
+
+    // Data yang akan dikirim untuk update
+    const data = {
+      id: id,
+      nama: nama
+    };
+
+    // Mengirimkan data dengan AJAX (fetch)
+    fetch(`/edit-esp/${id}`, {
+      method: 'PUT', // Menggunakan PUT untuk update data
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.status === 'success') {
+        alert('Lokasi berhasil diperbarui');
+        document.getElementById('editModal').style.display = 'none'; // Tutup modal
+        // Update UI (misalnya, table) jika perlu
+      } else {
+        alert('Gagal memperbarui lokasi: ' + result.reason);
+      }
+    })
+    .catch(error => {
+      alert('Error: ' + error);
+    });
+  });
+</script>
+
+    <script>
+  // Menutup Modal Hapus
+  document.getElementById('closeDeleteModalBtn').addEventListener('click', function() {
+    document.getElementById('deleteModal').style.display = 'none';
+  });
+
+  // Fungsi untuk membuka modal hapus dengan nama dan ID lokasi yang ingin dihapus
+  function openDeleteModal(id, nama) {
+    document.getElementById('delete-nama').textContent = nama; // Set Nama Lokasi
+    document.getElementById('delete-id').value = id; // Set ID untuk dikirimkan ke server
+    document.getElementById('deleteModal').style.display = 'block'; // Buka modal
+  }
+
+  // Mengirimkan data untuk menghapus lokasi
+  document.getElementById('deleteForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const id = document.getElementById('delete-id').value;
+
+    // Mengirimkan request dengan fetch untuk menghapus data berdasarkan ID
+    fetch(`/delete-esp/${id}`, {
+      method: 'DELETE', // Menggunakan DELETE untuk menghapus data
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.status === 'success') {
+        alert('Lokasi berhasil dihapus');
+        document.getElementById('deleteModal').style.display = 'none'; // Tutup modal
+        // Update UI (misalnya, tabel lokasi) jika perlu
+      } else {
+        alert('Gagal menghapus lokasi: ' + result.reason);
+      }
+    })
+    .catch(error => {
+      alert('Error: ' + error);
+    });
+  });
+</script>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
 </html>

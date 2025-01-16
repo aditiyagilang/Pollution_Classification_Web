@@ -79,3 +79,39 @@ document.getElementById('deleteForm').addEventListener('submit', (event) => {
     ID: ${document.getElementById('delete-id').value}`);
   deleteModal.style.display = 'none'; 
 });
+
+
+document.getElementById('addForm').addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  const id = document.getElementById('id').value;
+  const nama = document.getElementById('nama').value;
+
+  // Data yang akan dikirim
+  const data = {
+    id: id,
+    nama: nama
+  };
+
+  // Mengirim data dengan AJAX
+  fetch('/add-esp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.status === 'success') {
+      alert('Lokasi berhasil ditambahkan');
+      document.getElementById('addModal').style.display = 'none';
+      document.getElementById('addForm').reset(); // Reset form
+    } else {
+      alert('Gagal menambahkan lokasi: ' + result.reason);
+    }
+  })
+  .catch(error => {
+    alert('Error: ' + error);
+  });
+});

@@ -104,7 +104,19 @@ def data():
 
 @app.route('/lokasi')
 def location():
-    return render_template('location.html')
+    # Mengambil data lokasi dari database
+    connection = connect_db()
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM esp")  # Mengambil data dari tabel esp
+        lokasi_list = cursor.fetchall()  # Menyimpan hasil query
+        cursor.close()
+        connection.close()
+        
+        # Kirim data lokasi ke template
+        return render_template('location.html', lokasi_list=lokasi_list)
+    else:
+        return "Database connection failed", 500
 
 @app.route('/polusi')
 def pollution():
@@ -186,6 +198,100 @@ def sign_up():
         return jsonify({"status": "failed", "reason": "database connection error"}), 500
 
     return render_template('sign-up.html')
+
+@app.route('/add-esp', methods=['POST'])
+def add_esp():
+    data = request.get_json()
+
+    # Ambil data dari request
+    esp_id = data.get('id')
+    nama = data.get('nama')
+
+    # Pastikan data ada
+    if not esp_id or not nama:
+        return jsonify({"status": "failed", "reason": "ID dan Nama harus diisi"}), 400
+
+    # Koneksi ke database
+    connection = connect_db()
+    if connection:
+        cursor = connection.cursor()
+        try:
+            # Query untuk insert data ke tabel esp
+            insert_query = """
+                INSERT INTO esp (id, nama) 
+                VALUES (%s, %s)
+            """
+            cursor.execute(insert_query, (esp_id, nama))
+            connection.commit()
+
+            return jsonify({"status": "success"}), 200
+        except Exception as e:
+            connection.rollback()  # Rollback jika ada error
+            return jsonify({"status": "failed", "reason": str(e)}), 500
+        finally:
+            cursor.close()
+            connection.close()
+    else:
+        return jsonify({"status": "failed", "reason": "database connection error"}), 500
+
+@app.route('/edit-esp/<int:id>', methods=['PUT'])
+def edit_esp(id):
+    data = request.get_json()
+
+    # Ambil data dari request
+    nama = data.get('nama')
+
+    if not nama:
+        return jsonify({"status": "failed", "reason": "Nama harus diisi"}), 400
+
+    # Koneksi ke database
+    connection = connect_db()
+    if connection:
+        cursor = connection.cursor()
+        try:
+            # Query untuk update data lokasi berdasarkan ID
+            update_query = """
+                UPDATE esp
+                SET nama = %s
+                WHERE id = %s
+            """
+            cursor.execute(update_query, (nama, id))
+            connection.commit()
+
+            return jsonify({"status": "success"}), 200
+        except Exception as e:
+            connection.rollback()  # Rollback jika ada error
+            return jsonify({"status": "failed", "reason": str(e)}), 500
+        finally:
+            cursor.close()
+            connection.close()
+    else:
+        return jsonify({"status": "failed", "reason": "database connection error"}), 500
+@app.route('/delete-esp/<int:id>', methods=['DELETE'])
+def delete_esp(id):
+    # Koneksi ke database
+    connection = connect_db()
+    if connection:
+        cursor = connection.cursor()
+        try:
+            # Query untuk menghapus data lokasi berdasarkan ID
+            delete_query = """
+                DELETE FROM esp
+                WHERE id = %s
+            """
+            cursor.execute(delete_query, (id,))
+            connection.commit()
+
+            return jsonify({"status": "success"}), 200
+        except Exception as e:
+            connection.rollback()  # Rollback jika ada error
+            return jsonify({"status": "failed", "reason": str(e)}), 500
+        finally:
+            cursor.close()
+            connection.close()
+    else:
+        return jsonify({"status": "failed", "reason": "database connection error"}), 500
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8006)
