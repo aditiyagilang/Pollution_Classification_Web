@@ -26,23 +26,18 @@ def receive_data():
     ispu_co = data.get('ISPU_CO')
     ispu_hc = data.get('ISPU_HC')
     ispu_o3 = data.get('ISPU_O3')  
-    
-    # Mengambil waktu saat ini untuk timestamp
     timestamp = datetime.now()
 
     connection = connect_db()
     if connection:
         cursor = connection.cursor()
         try:
-            # Insert into data_polusi table dengan timestamp
             insert_polusi_query = """
                 INSERT INTO data_polusi (esp_id, pm10, pm25, co, hc, o3, timestamp)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(insert_polusi_query, (esp_id, pm10, pm25, co, hc, o3, timestamp))
-            polusi_id = cursor.lastrowid  # Get the last inserted id
-
-            # Insert into ispu_data table
+            polusi_id = cursor.lastrowid 
             insert_ispu_query = """
                 INSERT INTO ispu_data (polusi_id, ispu_pm10, ispu_pm25, ispu_co, ispu_hc, ispu_o3)
                 VALUES (%s, %s, %s, %s, %s, %s)
