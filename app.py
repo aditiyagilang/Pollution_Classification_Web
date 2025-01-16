@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, session
+from werkzeug.security import check_password_hash
 from db import connect_db  
 from datetime import datetime
 import pandas as pd
@@ -7,6 +8,7 @@ from flask import Flask, request, jsonify, render_template
 
 
 app = Flask(__name__)
+app.secret_key = 'b3c69c0b-8e72-492f-b9f4-a13e447dcadf'
 
 model = joblib.load('svc_rbf.pkl')
 
@@ -62,7 +64,43 @@ def receive_data():
 
 @app.route('/home')
 def home():
-    return render_template('home.html')
+    if 'user_id' not in session:
+        return redirect('/sign-in')
+    return render_template('home.html', username=session.get('username'))
+
+@app.route('/sign-in', methods=['GET', 'POST'])
+def sign_in():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        connection = connect_db()
+        if connection:
+            cursor = connection.cursor(dictionary=True)
+            try:
+                # Ambil data user berdasarkan username
+                query = "SELECT * FROM users WHERE username = %s"
+                cursor.execute(query, (username,))
+                user = cursor.fetchone()
+
+                if user and check_password_hash(user['password'], password):
+                    # Jika valid, simpan user_id dan username ke session
+                    session['user_id'] = user['id']
+                    session['username'] = user['username']
+                    return redirect('/home')
+                else:
+                    # Jika tidak valid, tampilkan pesan error
+                    return render_template('login.html', error="Invalid username or password")
+            except Exception as e:
+                return f"Error: {e}"
+            finally:
+                cursor.close()
+                connection.close()
+
+        return jsonify({"status": "failed", "reason": "database connection error"}), 500
+
+    # Tampilkan halaman login jika request method adalah GET
+    return render_template('login.html')
 
 @app.route('/data')
 def data():
@@ -79,6 +117,7 @@ def pollution():
 @app.route('/klasifikasi')
 def clasification():
     return render_template('clasification.html')
+
 
 import pandas as pd
 
