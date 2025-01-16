@@ -62,7 +62,7 @@ def receive_data():
 def home():
     if 'user_id' not in session:
         return redirect('/sign-in')
-    return render_template('home.html', username=session.get('username'))
+    return render_template('dashboard.html', username=session.get('username'))
 
 @app.route('/sign-in', methods=['GET', 'POST'])
 def sign_in():
