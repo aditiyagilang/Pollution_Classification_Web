@@ -75,11 +75,11 @@
           <tbody>
             {% for lokasi in lokasi_list %}
             <tr>
-              <td>{{ lokasi.id }}</td>
-              <td>{{ lokasi.nama }}</td>
+              <td>{{ lokasi.esp_id }}</td>
+              <td>{{ lokasi.location }}</td>
               <td>
                 <button class="btn edit-btn"
-                  onclick="openEditModal('{{ lokasi.id }}', '{{ lokasi.nama }}')">
+                  onclick="openEditModal('{{ lokasi.esp_id }}', '{{ lokasi.location }}')">
                   <img class="icon"
                     src="{{ url_for('static', filename='assets/edit.png') }}"
                     alt="Edit Icon" />
