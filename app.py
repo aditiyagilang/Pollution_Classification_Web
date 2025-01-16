@@ -1,15 +1,16 @@
 from flask import Flask, request, jsonify, render_template, redirect, session
-from werkzeug.security import check_password_hash
-from db import connect_db  
+from flask_bcrypt import Bcrypt
+from db import connect_db  # Pastikan Anda memiliki fungsi untuk koneksi ke database
 from datetime import datetime
-import pandas as pd
 import joblib
-from flask import Flask, request, jsonify, render_template
-
+import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = 'b3c69c0b-8e72-492f-b9f4-a13e447dcadf'
 
+bcrypt = Bcrypt(app)
+
+# Load model untuk prediksi
 model = joblib.load('svc_rbf.pkl')
 
 @app.route('/api/esp/data', methods=['POST'])
@@ -78,7 +79,7 @@ def sign_in():
                 cursor.execute(query, (username,))
                 user = cursor.fetchone()
 
-                if user and check_password_hash(user['password'], password):
+                if user and bcrypt.check_password_hash(user['password'], password):
                     # Jika valid, simpan user_id dan username ke session
                     session['user_id'] = user['id']
                     session['username'] = user['username']
@@ -112,9 +113,6 @@ def pollution():
 @app.route('/klasifikasi')
 def clasification():
     return render_template('clasification.html')
-
-
-import pandas as pd
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
@@ -163,6 +161,31 @@ def ispu_data():
 
     return "Error connecting to the database", 500
 
+# Fungsi untuk mendaftar user baru
+@app.route('/sign-up', methods=['GET', 'POST'])
+def sign_up():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        connection = connect_db()
+        if connection:
+            cursor = connection.cursor()
+            try:
+                query = "INSERT INTO users (username, password) VALUES (%s, %s)"
+                cursor.execute(query, (username, hashed_password))
+                connection.commit()
+                return redirect('/sign-in')
+            except Exception as e:
+                return f"Error: {e}"
+            finally:
+                cursor.close()
+                connection.close()
+
+        return jsonify({"status": "failed", "reason": "database connection error"}), 500
+
+    return render_template('sign-up.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8006)
