@@ -1,86 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sidebar dan Tabel</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    integrity="sha384-9ndCyUa5lG2lubx7KdDh5GE1bHfn9S3r5MWR6Wt5oE2saNQFgeN9T8YbWZ7s1eD3"
-    crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/data-table.css') }}">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar dan Tabel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-9ndCyUa5lG2lubx7KdDh5GE1bHfn9S3r5MWR6Wt5oE2saNQFgeN9T8YbWZ7s1eD3"
+      crossorigin="anonymous">
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/data-table.css') }}">
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&display=swap"
-    rel="stylesheet">
-  
-</head>
-<body>
-  <div class="container">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <ul class="menu">
-        <li class="menu-item active">
-            <img class="icon" src="{{ url_for('static', filename='assets/icon_home.png') }}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&display=swap"
+      rel="stylesheet">
+
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <ul class="menu">
+          <li class="menu-item active">
+            <img class="icon"
+              src="{{ url_for('static', filename='assets/icon_home.png') }}" />
             <span>Dashboard</span>
-        </li>
-        <li class="menu-item" onclick="window.location.href='/lokasi'">
-          <img class="icon" src="{{ url_for('static', filename='assets/icon_map.png') }}" />
-          <span>Lokasi</span>
-        </li>
-        <li class="menu-item" onclick="window.location.href='/kalsifikasi'">
-            <img class="icon" src="{{ url_for('static', filename='assets/icon_kasifikasi.png') }}" />
+          </li>
+          <li class="menu-item" onclick="window.location.href='/lokasi'">
+            <img class="icon"
+              src="{{ url_for('static', filename='assets/icon_map.png') }}" />
+            <span>Lokasi</span>
+          </li>
+          <li class="menu-item" onclick="window.location.href='/kalsifikasi'">
+            <img class="icon"
+              src="{{ url_for('static', filename='assets/icon_kasifikasi.png') }}" />
             <span>Klasifikasi</span>
-        </li>
-      </ul>
-      <div class="exit" onclick="window.location.href='/logout'">
-        <img class="icon" src="{{ url_for('static', filename='assets/icon_exit.png') }}" />
-        <span>Exit</span>
-      </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-      <!-- Cards for displaying air quality -->
-      <div class="monitoring-overview">
-        <div class="overview-data">
-          <div class="data-card">
-            <p>SO2</p>
-            <h3>{{ klasifikasi_data[0][1] }}</h3> <!-- Display SO2 value -->
-            <p>{{ klasifikasi_data[0][0] }}</p> <!-- Display timestamp -->
-          </div>
-          <div class="data-card">
-            <p>NO2</p>
-            <h3>{{ klasifikasi_data[0][2] }}</h3> <!-- Display NO2 value -->
-            <p>{{ klasifikasi_data[0][0] }}</p> <!-- Display timestamp -->
-          </div>
-          <div class="data-card">
-            <p>O3</p>
-            <h3>{{ klasifikasi_data[0][3] }}</h3> <!-- Display O3 value -->
-            <p>{{ klasifikasi_data[0][0] }}</p> <!-- Display timestamp -->
-          </div>
-          <div class="data-card">
-            <p>CO</p>
-            <h3>{{ klasifikasi_data[0][4] }}</h3> <!-- Display CO value -->
-            <p>{{ klasifikasi_data[0][0] }}</p> <!-- Display timestamp -->
-          </div>
+          </li>
+        </ul>
+        <div class="exit" onclick="window.location.href='/logout'">
+          <img class="icon"
+            src="{{ url_for('static', filename='assets/icon_exit.png') }}" />
+          <span>Exit</span>
         </div>
       </div>
 
-      <!-- Air Quality Chart -->
-      <div class="air-quality-chart">
-        <h3>Air Quality Chart</h3>
-        <p>Air quality index (AQI) forecast</p>
-        <canvas id="airQualityChart" width="400" height="200"></canvas>
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Cards for displaying air quality -->
+        <div class="monitoring-overview">
+          <div class="overview-data">
+            <div class="data-card">
+              <p>SO₂ (Sulfur Dioksida)</p>
+              <h3>{{ latest_data[1] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+            <div class="data-card">
+              <p>NO₂ (Nitrogen Dioksida)</p>
+              <h3>{{ latest_data[2] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+            <div class="data-card">
+              <p>PM₁₀</p>
+              <h3>{{ latest_data[3] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+            <div class="data-card">
+              <p>PM₂.₅</p>
+              <h3>{{ latest_data[4] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="monitoring-overview">
+          <div class="overview-data">
+            <div class="data-card">
+              <p>HC (Hidrokarbon)</p>
+              <h3>{{ latest_data[5] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+            <div class="data-card">
+              <p>CO (Karbon Monoksida)</p>
+              <h3>{{ latest_data[6] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+            <div class="data-card">
+              <p>O₃ (Ozon)</p>
+              <h3>{{ latest_data[7] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+            <div class="data-card">
+              <p>Klasifikasi Udara</p>
+              <h3>{{ latest_data[8] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+          </div>
+        </div>
+        <!-- Air Quality Chart -->
+        <div class="air-quality-chart">
+          <h3>Air Quality Chart</h3>
+          <p>Air quality index (AQI) forecast</p>
+          <canvas id="airQualityChart" width="400" height="200"></canvas>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
     const timestamps = {{ timestamps | tojson }};
     const ctx = document.getElementById('airQualityChart').getContext('2d');
     const airQualityChart = new Chart(ctx, {
@@ -116,8 +145,7 @@
     });
   </script>
 
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
-
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
 
 </html>

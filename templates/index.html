@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Information System</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -37,29 +38,37 @@
     <main>
       <section id="hero" class="hero">
         <div class="hero-text">
-          <h1 style="font-size: 23px; font-weight: 400; width: 60%;">Welcome</h1>
-          <h2 style="font-size: 37px; font-weight: 700;  width: 60%;">Monitoring Information
+          <h1
+            style="font-size: 23px; font-weight: 400; width: 60%;">Welcome</h1>
+          <h2 style="font-size: 37px; font-weight: 700;  width: 60%;">Monitoring
+            Information
             System IoT Based Smart Pollution</h2>
-          <p style="font-size: 17px; font-weight: 400;  width: 60%;">A platform utilizing
+          <p style="font-size: 17px; font-weight: 400;  width: 60%;">A platform
+            utilizing
             Internet of Things to provide annual environmental pollution
             monitoring through sensors and a web application</p>
           <a href="#" class="btn">Get Started</a>
         </div>
         <div class="hero-image">
-          <img src="{{ url_for('static', filename='assets/gambar_polusi.png') }}" alt="Hero Image">
+          <img
+            src="{{ url_for('static', filename='assets/gambar_polusi.png') }}"
+            alt="Hero Image">
         </div>
       </section>
 
       <section id="information-monitoring" class="information-monitoring">
         <h2 style="font-size: 33px; font-weight: 700;">Information
           Monitoring</h2>
-        <img src="{{ url_for('static', filename='assets/line1.png') }}" style="width: 30%;" alt="Hero Image">
-        <img src="{{ url_for('static', filename='assets/line2.png') }}" style="width: 30%; margin-top: 0.5%;"
+        <img src="{{ url_for('static', filename='assets/line1.png') }}"
+          style="width: 30%;" alt="Hero Image">
+        <img src="{{ url_for('static', filename='assets/line2.png') }}"
+          style="width: 30%; margin-top: 0.5%;"
           alt="Hero Image">
 
         <div class="overview-card">
           <div class="image-container">
-            <img src="{{ url_for('static', filename='assets/people.png') }}" alt="People Image">
+            <img src="{{ url_for('static', filename='assets/people.png') }}"
+              alt="People Image">
           </div>
           <div class="text-content">
             <p style="font-size: 12px; font-weight: 400;">What is the air
@@ -68,31 +77,54 @@
           </div>
         </div>
         <div class="monitoring-overview">
-
           <div class="overview-data">
             <div class="data-card">
-              <p>Temperature</p>
-              <h3>25°C</h3>
+              <p>SO₂ (Sulfur Dioksida)</p>
+              <h3>{{ latest_data[1] if latest_data else 'N/A' }}</h3>
               <p>Today</p>
             </div>
             <div class="data-card">
-              <p>Humidity</p>
-              <h3>60%</h3>
+              <p>NO₂ (Nitrogen Dioksida)</p>
+              <h3>{{ latest_data[2] if latest_data else 'N/A' }}</h3>
               <p>Today</p>
             </div>
             <div class="data-card">
-              <p>Air Pollution Image</p>
-              <h3>35%</h3>
+              <p>PM₁₀</p>
+              <h3>{{ latest_data[3] if latest_data else 'N/A' }}</h3>
               <p>Today</p>
             </div>
             <div class="data-card">
-              <p>Air Quality</p>
-              <h3>85</h3>
+              <p>PM₂.₅</p>
+              <h3>{{ latest_data[4] if latest_data else 'N/A' }}</h3>
               <p>Today</p>
             </div>
           </div>
         </div>
 
+        <div class="monitoring-overview">
+          <div class="overview-data">
+            <div class="data-card">
+              <p>HC (Hidrokarbon)</p>
+              <h3>{{ latest_data[5] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+            <div class="data-card">
+              <p>CO (Karbon Monoksida)</p>
+              <h3>{{ latest_data[6] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+            <div class="data-card">
+              <p>O₃ (Ozon)</p>
+              <h3>{{ latest_data[7] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+            <div class="data-card">
+              <p>Klasifikasi Udara</p>
+              <h3>{{ latest_data[8] if latest_data else 'N/A' }}</h3>
+              <p>Today</p>
+            </div>
+          </div>
+        </div>
         <div class="air-quality-chart">
           <h3>Air Quality Chart</h3>
           <p>Air quality index (AQI) forecast</p>
@@ -102,49 +134,68 @@
 
       <section id="about-website" class="about-website">
         <h2 style="font-size: 33px; font-weight: 700;">About Website</h2>
-        <img src="{{ url_for('static', filename='assets/line1.png') }}" style="width: 30%;" alt="Hero Image">
-        <img src="{{ url_for('static', filename='assets/line2.png') }}" style="width: 30%; margin-top: 0.5%;"
+        <img src="{{ url_for('static', filename='assets/line1.png') }}"
+          style="width: 30%;" alt="Hero Image">
+        <img src="{{ url_for('static', filename='assets/line2.png') }}"
+          style="width: 30%; margin-top: 0.5%;"
           alt="Hero Image">
-          <div class="container" style="width: 70%;">
-        <p style="text-align: justify; font-size: 17px; font-weight: 400; ">Lorem
-          ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium, quam id
-          tristique pretium, dolor nisl sodales neque, eu condimentum est enim
-          in tortor. Nullam dolor dolor, iaculis et laoreet et, facilisis vitae
-          sem. Cras ultricies dolor vitae velit venenatis sodales. Pellentesque
-          molestie orci est, sit amet gravida quam efficitur eu. Curabitur
-          dapibus maximus turpis, in egestas nunc hendrerit et. Phasellus porta
-          lacus vitae erat iaculis imperdiet. Donec malesuada, lectus eu dictum
-          consectetur, odio massa imperdiet justo, eu porttitor est justo
-          efficitur orci. Nulla turpis mi, sodales ut tempor a, tempus sed
-          dolor. Vivamus placerat est neque, quis placerat nisi sodales vel.
-          Etiam sit amet enim nulla. Integer dictum justo libero, congue auctor
-          est mollis ut. Ut pretium ligula at imperdiet facilisis. Praesent
-          consectetur nulla vel neque varius, vel interdum diam hendrerit.
-          Vestibulum nulla lectus, bibendum dapibus ante et, lacinia mattis
-          tortor. Integer accumsan nulla nulla, quis sodales leo ultricies ut.
-          Duis pulvinar neque sed nunc pulvinar blandit. Suspendisse in gravida
-          est. Donec at dolor urna. Morbi tortor lectus, placerat nec convallis
-          in, mollis ut purus. Cras in tellus eget nibh elementum convallis
-          vitae vel ex. Aliquam neque mi, molestie non tempus sed, commodo eu
-          risus. Pellentesque et viverra felis. Aenean et mauris dictum, blandit
-          orci vitae, imperdiet enim. Ut risus augue, pretium vitae congue eu,
-          vehicula vitae sapien.
-          Aenean sed neque ut mi convallis mollis a iaculis augue. Vivamus a
-          sollicitudin metus. Fusce et hendrerit eros, id commodo risus. Nunc ut
-          nisi sed tellus malesuada pharetra. Cras tempus orci arcu, at accumsan
-          ipsum semper ut. Fusce gravida erat ut lorem feugiat, ac bibendum ante
-          lacinia. Suspendisse tortor mauris, commodo quis eleifend eu, commodo
-          eu ex. Curabitur accumsan purus non diam ullamcorper, et tempus justo
-          finibus. Suspendisse ligula lectus, interdum vel feugiat et, iaculis
-          eu justo.</p>
+        <div class="container" style="width: 70%;">
+          <p
+            style="text-align: justify; font-size: 17px; font-weight: 400; ">Lorem
+            ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium, quam
+            id
+            tristique pretium, dolor nisl sodales neque, eu condimentum est enim
+            in tortor. Nullam dolor dolor, iaculis et laoreet et, facilisis
+            vitae
+            sem. Cras ultricies dolor vitae velit venenatis sodales.
+            Pellentesque
+            molestie orci est, sit amet gravida quam efficitur eu. Curabitur
+            dapibus maximus turpis, in egestas nunc hendrerit et. Phasellus
+            porta
+            lacus vitae erat iaculis imperdiet. Donec malesuada, lectus eu
+            dictum
+            consectetur, odio massa imperdiet justo, eu porttitor est justo
+            efficitur orci. Nulla turpis mi, sodales ut tempor a, tempus sed
+            dolor. Vivamus placerat est neque, quis placerat nisi sodales vel.
+            Etiam sit amet enim nulla. Integer dictum justo libero, congue
+            auctor
+            est mollis ut. Ut pretium ligula at imperdiet facilisis. Praesent
+            consectetur nulla vel neque varius, vel interdum diam hendrerit.
+            Vestibulum nulla lectus, bibendum dapibus ante et, lacinia mattis
+            tortor. Integer accumsan nulla nulla, quis sodales leo ultricies ut.
+            Duis pulvinar neque sed nunc pulvinar blandit. Suspendisse in
+            gravida
+            est. Donec at dolor urna. Morbi tortor lectus, placerat nec
+            convallis
+            in, mollis ut purus. Cras in tellus eget nibh elementum convallis
+            vitae vel ex. Aliquam neque mi, molestie non tempus sed, commodo eu
+            risus. Pellentesque et viverra felis. Aenean et mauris dictum,
+            blandit
+            orci vitae, imperdiet enim. Ut risus augue, pretium vitae congue eu,
+            vehicula vitae sapien.
+            Aenean sed neque ut mi convallis mollis a iaculis augue. Vivamus a
+            sollicitudin metus. Fusce et hendrerit eros, id commodo risus. Nunc
+            ut
+            nisi sed tellus malesuada pharetra. Cras tempus orci arcu, at
+            accumsan
+            ipsum semper ut. Fusce gravida erat ut lorem feugiat, ac bibendum
+            ante
+            lacinia. Suspendisse tortor mauris, commodo quis eleifend eu,
+            commodo
+            eu ex. Curabitur accumsan purus non diam ullamcorper, et tempus
+            justo
+            finibus. Suspendisse ligula lectus, interdum vel feugiat et, iaculis
+            eu justo.</p>
         </div>
 
       </section>
 
       <section id="customer-service" class="customer-service">
         <h2 style="font-size: 23px; font-weight: 700;"> Customer Service</h2>
-        <img src="{{ url_for('static', filename='assets/line1.png') }}" style="width: 30%;" alt="Hero Image">
-        <img src="{{ url_for('static', filename='assets/line2.png') }}" style="width: 30%; margin-top: 0.5%;"
+        <img src="{{ url_for('static', filename='assets/line1.png') }}"
+          style="width: 30%;" alt="Hero Image">
+        <img src="{{ url_for('static', filename='assets/line2.png') }}"
+          style="width: 30%; margin-top: 0.5%;"
           alt="Hero Image">
 
         <p style="color: #646466; font-size: 17px; font-weight: 400;">If you

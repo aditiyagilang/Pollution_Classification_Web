@@ -58,9 +58,54 @@ def receive_data():
 
 @app.route('/home')
 def home():
-    if 'user_id' not in session:
-        return redirect('/sign-in')
-    return render_template('dashboard.html', username=session.get('username'))
+    connection = connect_db()
+    cursor = connection.cursor()
+    try:
+        # Ambil hanya 1 data terbaru untuk ditampilkan di kartu
+        cursor.execute("SELECT timestamp, so2, no2, pm10, pm25, hc, co, o3, klasifikasi FROM klasifikasi ORDER BY timestamp DESC LIMIT 1")
+        latest_data = cursor.fetchone()  # Ambil 1 baris terbaru
+
+        print("DATA TERBARU:", latest_data)  # DEBUGGING
+
+        # Ambil 7 data terakhir untuk grafik
+        cursor.execute("SELECT timestamp, so2, no2, pm10, pm25, hc, co, o3 FROM klasifikasi ORDER BY timestamp DESC LIMIT 7")
+        klasifikasi_data = cursor.fetchall()  # Semua data untuk grafik
+
+        print("DATA UNTUK GRAFIK:", klasifikasi_data)  # DEBUGGING
+
+        # Ambil timestamp untuk grafik
+        timestamps = [row[0] for row in klasifikasi_data]  # Ambil timestamp dari setiap baris
+        
+        # Label untuk parameter
+        labels = ['so2', 'no2', 'pm10', 'pm25', 'hc', 'co', 'o3']
+        datasets = []
+
+        # Siapkan data untuk grafik
+        for idx, label in enumerate(labels):
+            data_for_chart = [row[idx + 1] for row in klasifikasi_data]  # Data kolom ke-(idx+1)
+            datasets.append({
+                'label': label.upper(),
+                'data': data_for_chart,
+                'backgroundColor': 'rgba(75, 192, 192, 0.2)',
+                'borderColor': 'rgba(75, 192, 192, 1)',
+                'borderWidth': 2,
+                'tension': 0.3
+            })
+
+        return render_template('dashboard.html', 
+                               latest_data=latest_data,  # Data terbaru untuk card
+                               datasets=datasets,  # Data untuk grafik
+                               timestamps=timestamps)  # Timestamp untuk grafik
+
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return render_template('dashboard.html', latest_data={}, datasets=[], timestamps=[])
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
 
 @app.route('/sign-in', methods=['GET', 'POST'])
 def sign_in():
@@ -287,20 +332,30 @@ def ispu_data():
     connection = connect_db()
     cursor = connection.cursor()
     try:
-        # Ambil data klasifikasi terbaru (tergantung pada bagaimana struktur tabel)
-        cursor.execute("SELECT timestamp, so2, no2, pm10, pm25, hc, co, o3, klasifikasi FROM klasifikasi ORDER BY timestamp DESC LIMIT 7")  # Ambil data terbaru
-        klasifikasi_data = cursor.fetchall()
+        # Ambil hanya 1 data terbaru untuk ditampilkan di kartu
+        cursor.execute("SELECT timestamp, so2, no2, pm10, pm25, hc, co, o3, klasifikasi FROM klasifikasi ORDER BY timestamp DESC LIMIT 1")
+        latest_data = cursor.fetchone()  # Ambil 1 baris terbaru
 
-        # Ambil data untuk grafik
-        timestamps = [row[0] for row in klasifikasi_data]  # Ambil timestamp untuk sumbu X
+        print("DATA TERBARU:", latest_data)  # DEBUGGING
+
+        # Ambil 7 data terakhir untuk grafik
+        cursor.execute("SELECT timestamp, so2, no2, pm10, pm25, hc, co, o3 FROM klasifikasi ORDER BY timestamp DESC LIMIT 7")
+        klasifikasi_data = cursor.fetchall()  # Semua data untuk grafik
+
+        print("DATA UNTUK GRAFIK:", klasifikasi_data)  # DEBUGGING
+
+        # Ambil timestamp untuk grafik
+        timestamps = [row[0] for row in klasifikasi_data]  # Ambil timestamp dari setiap baris
+        
+        # Label untuk parameter
         labels = ['so2', 'no2', 'pm10', 'pm25', 'hc', 'co', 'o3']
         datasets = []
 
-        # Sesuaikan data untuk grafik
+        # Siapkan data untuk grafik
         for idx, label in enumerate(labels):
-            data_for_chart = [row[idx + 1] for row in klasifikasi_data]  # Ambil data berdasarkan kolom untuk grafik
+            data_for_chart = [row[idx + 1] for row in klasifikasi_data]  # Data kolom ke-(idx+1)
             datasets.append({
-                'label': label,
+                'label': label.upper(),
                 'data': data_for_chart,
                 'backgroundColor': 'rgba(75, 192, 192, 0.2)',
                 'borderColor': 'rgba(75, 192, 192, 1)',
@@ -308,12 +363,14 @@ def ispu_data():
                 'tension': 0.3
             })
 
-        # Kirimkan data klasifikasi ke template
-        return render_template('index.html', klasifikasi_data=klasifikasi_data, datasets=datasets, timestamps=timestamps)
+        return render_template('index.html', 
+                               latest_data=latest_data,  # Data terbaru untuk card
+                               datasets=datasets,  # Data untuk grafik
+                               timestamps=timestamps)  # Timestamp untuk grafik
 
     except Exception as e:
         print(f"Error fetching data: {e}")
-        return render_template('index.html', klasifikasi_data=[], datasets=[], timestamps=[])
+        return render_template('index.html', latest_data={}, datasets=[], timestamps=[])
 
     finally:
         cursor.close()
