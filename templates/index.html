@@ -37,10 +37,10 @@
     <main>
       <section id="hero" class="hero">
         <div class="hero-text">
-          <h1 style="font-size: 43px; font-weight: 400;">Welcome</h1>
-          <h2 style="font-size: 67px; font-weight: 700;">Monitoring Information
+          <h1 style="font-size: 23px; font-weight: 400; width: 60%;">Welcome</h1>
+          <h2 style="font-size: 37px; font-weight: 700;  width: 60%;">Monitoring Information
             System IoT Based Smart Pollution</h2>
-          <p style="font-size: 27px; font-weight: 400;">A platform utilizing
+          <p style="font-size: 17px; font-weight: 400;  width: 60%;">A platform utilizing
             Internet of Things to provide annual environmental pollution
             monitoring through sensors and a web application</p>
           <a href="#" class="btn">Get Started</a>
@@ -51,7 +51,7 @@
       </section>
 
       <section id="information-monitoring" class="information-monitoring">
-        <h2 style="font-size: 53px; font-weight: 700;">Information
+        <h2 style="font-size: 33px; font-weight: 700;">Information
           Monitoring</h2>
         <img src="{{ url_for('static', filename='assets/line1.png') }}" style="width: 30%;" alt="Hero Image">
         <img src="{{ url_for('static', filename='assets/line2.png') }}" style="width: 30%; margin-top: 0.5%;"
@@ -62,7 +62,7 @@
             <img src="{{ url_for('static', filename='assets/people.png') }}" alt="People Image">
           </div>
           <div class="text-content">
-            <p style="font-size: 22px; font-weight: 400;">What is the air
+            <p style="font-size: 12px; font-weight: 400;">What is the air
               quality at Jember State Polytechnic now?</p>
             <p>Description</p>
           </div>
@@ -101,12 +101,12 @@
       </section>
 
       <section id="about-website" class="about-website">
-        <h2 style="font-size: 53px; font-weight: 700;">About Website</h2>
+        <h2 style="font-size: 33px; font-weight: 700;">About Website</h2>
         <img src="{{ url_for('static', filename='assets/line1.png') }}" style="width: 30%;" alt="Hero Image">
         <img src="{{ url_for('static', filename='assets/line2.png') }}" style="width: 30%; margin-top: 0.5%;"
           alt="Hero Image">
-
-        <p style="text-align: justify; font-size: 27px; font-weight: 400;">Lorem
+          <div class="container" style="width: 70%;">
+        <p style="text-align: justify; font-size: 17px; font-weight: 400; ">Lorem
           ipsum dolor sit amet, consectetur adipiscing elit. Ut pretium, quam id
           tristique pretium, dolor nisl sodales neque, eu condimentum est enim
           in tortor. Nullam dolor dolor, iaculis et laoreet et, facilisis vitae
@@ -137,15 +137,17 @@
           eu ex. Curabitur accumsan purus non diam ullamcorper, et tempus justo
           finibus. Suspendisse ligula lectus, interdum vel feugiat et, iaculis
           eu justo.</p>
+        </div>
+
       </section>
 
       <section id="customer-service" class="customer-service">
-        <h2 style="font-size: 53px; font-weight: 700;"> Customer Service</h2>
+        <h2 style="font-size: 23px; font-weight: 700;"> Customer Service</h2>
         <img src="{{ url_for('static', filename='assets/line1.png') }}" style="width: 30%;" alt="Hero Image">
         <img src="{{ url_for('static', filename='assets/line2.png') }}" style="width: 30%; margin-top: 0.5%;"
           alt="Hero Image">
 
-        <p style="color: #646466; font-size: 27px; font-weight: 400;">If you
+        <p style="color: #646466; font-size: 17px; font-weight: 400;">If you
           encounter any issues while using the website, you can contact the
           following Customer Service representatives:</p>
         <div class="contact-info">
@@ -171,57 +173,39 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-
-const navLinks = document.querySelectorAll('.nav-links li a');
-
-navLinks.forEach(link => {
-  link.addEventListener('click', () => {
-
-    navLinks.forEach(nav => nav.classList.remove('active'));
- 
-    link.classList.add('active');
-  });
-});
-
-  const ctx = document.getElementById('airQualityChart').getContext('2d');
-  const airQualityChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-      datasets: [{
-        label: 'AQI',
-        data: [50, 100, 250, 200, 150, 180, 120], // Dummy data
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 2,
-        tension: 0.3
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          display: false
-        }
-      },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: 'Days'
-          }
+      const timestamps = {{ timestamps | tojson }};
+      const ctx = document.getElementById('airQualityChart').getContext('2d');
+      const airQualityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: timestamps,  // Use timestamp for x-axis
+          datasets: {{ datasets | tojson }}  // Dynamic datasets injected from Flask
         },
-        y: {
-          title: {
-            display: true,
-            text: 'AQI'
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true
+            }
           },
-          min: 0,
-          max: 300
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Timestamp'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Value'
+              },
+              min: 0,
+              max: 100
+            }
+          }
         }
-      }
-    }
-  });
-</script>
+      });
+    </script>
   </body>
 </html>

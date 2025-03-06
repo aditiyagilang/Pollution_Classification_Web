@@ -44,13 +44,11 @@ def receive_data():
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
             cursor.execute(insert_ispu_query, (polusi_id, ispu_pm10, ispu_pm25, ispu_co, ispu_hc, ispu_o3))
-
-            # Commit the transaction
             connection.commit()
 
             return jsonify({"status": "success"}), 200
         except Exception as e:
-            connection.rollback()  # Rollback in case of error
+            connection.rollback()  
             return jsonify({"status": "failed", "reason": str(e)}), 500
         finally:
             cursor.close()
@@ -100,7 +98,43 @@ def sign_in():
 
 @app.route('/data')
 def data():
-    return render_template('dashboard.html')
+    # Koneksi ke database untuk mengambil data terbaru
+    connection = connect_db()
+    cursor = connection.cursor()
+    try:
+        # Ambil data klasifikasi terbaru (tergantung pada bagaimana struktur tabel)
+        cursor.execute("SELECT timestamp, so2, no2, pm10, pm25, hc, co, o3, klasifikasi FROM klasifikasi ORDER BY timestamp DESC LIMIT 7")  # Ambil data terbaru
+        klasifikasi_data = cursor.fetchall()
+
+        # Ambil data untuk grafik
+        timestamps = [row[0] for row in klasifikasi_data]  # Ambil timestamp untuk sumbu X
+        labels = ['so2', 'no2', 'pm10', 'pm25', 'hc', 'co', 'o3']
+        datasets = []
+
+        # Sesuaikan data untuk grafik
+        for idx, label in enumerate(labels):
+            data_for_chart = [row[idx + 1] for row in klasifikasi_data]  # Ambil data berdasarkan kolom untuk grafik
+            datasets.append({
+                'label': label,
+                'data': data_for_chart,
+                'backgroundColor': 'rgba(75, 192, 192, 0.2)',
+                'borderColor': 'rgba(75, 192, 192, 1)',
+                'borderWidth': 2,
+                'tension': 0.3
+            })
+
+        # Kirimkan data klasifikasi ke template
+        return render_template('dashboard.html', klasifikasi_data=klasifikasi_data, datasets=datasets, timestamps=timestamps)
+
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return render_template('dashboard.html', klasifikasi_data=[], datasets=[], timestamps=[])
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
 
 @app.route('/lokasi')
 def location():
@@ -124,7 +158,94 @@ def pollution():
 
 @app.route('/klasifikasi')
 def clasification():
-    return render_template('clasification.html')
+    connection = connect_db()
+    if connection:
+        cursor = connection.cursor()
+        # Contoh query: mengambil semua kolom kecuali timestamp (atau sertakan jika perlu)
+        cursor.execute("""
+            SELECT id, so2, no2, o3, co, pm10, pm25, hc, klasifikasi
+            FROM klasifikasi
+            ORDER BY id DESC
+        """)
+        data = cursor.fetchall()  # data akan berbentuk list of tuples
+        cursor.close()
+        connection.close()
+
+        # Kirim data ke template
+        return render_template('clasification.html', data=data)
+    else:
+        return "Database connection error", 500
+
+@app.route('/edit-klasifikasi/<id>', methods=['PUT'])
+def edit_klasifikasi(id):
+    data = request.get_json()
+
+    # Ambil data yang dikirim
+    pm10 = data.get('pm10')
+    pm25 = data.get('pm25')
+    co = data.get('co')
+    hc = data.get('hc')
+    o3 = data.get('o3')
+    no2 = data.get('no2')
+    so2 = data.get('so2')
+
+    # Prediksi menggunakan model
+    input_data = pd.DataFrame([[pm10, pm25, co, hc, o3, no2, so2]], 
+                                  columns=['pm10', 'pm25', 'co', 'hc', 'o3', 'no2', 'so2'])
+    
+    # Prediksi menggunakan model SVM yang sudah dilatih
+    prediction = model.predict(input_data)
+    klasifikasi = prediction[0]  # Hasil klasifikasi
+
+    # Koneksi ke database
+    connection = connect_db()
+    if connection:
+        cursor = connection.cursor()
+        try:
+            # Update data di tabel klasifikasi dan set klasifikasi yang baru
+            update_query = """
+                UPDATE klasifikasi
+                SET pm10 = %s, pm25 = %s, co = %s, hc = %s, o3 = %s, no2 = %s, so2 = %s, klasifikasi = %s
+                WHERE id = %s
+            """
+            cursor.execute(update_query, (pm10, pm25, co, hc, o3, no2, so2, klasifikasi, id))
+            connection.commit()
+
+            cursor.close()
+            connection.close()
+            return jsonify({"status": "success"}), 200
+        except Exception as e:
+            connection.rollback()
+            cursor.close()
+            connection.close()
+            return jsonify({"status": "failed", "reason": str(e)}), 500
+    else:
+        return jsonify({"status": "failed", "reason": "Database connection error"}), 500
+
+@app.route('/delete-klasifikasi/<id>', methods=['DELETE'])
+def delete_klasifikasi(id):
+    # Koneksi ke database
+    connection = connect_db()
+    if connection:
+        cursor = connection.cursor()
+        try:
+            delete_query = """
+                DELETE FROM klasifikasi WHERE id = %s
+            """
+            cursor.execute(delete_query, (id,))
+            connection.commit()
+
+            cursor.close()
+            connection.close()
+            return jsonify({"status": "success"}), 200
+        except Exception as e:
+            connection.rollback()
+            cursor.close()
+            connection.close()
+            return jsonify({"status": "failed", "reason": str(e)}), 500
+    else:
+        return jsonify({"status": "failed", "reason": "Database connection error"}), 500
+
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
@@ -154,24 +275,50 @@ def predict():
 def login():
     return render_template('login.html')
 
+@app.route('/logout')
+def logout():
+    # Hapus semua data dari session
+    session.clear()
+    # Kembali ke halaman index
+    return redirect('/')
+
 @app.route('/')
 def ispu_data():
     connection = connect_db()
-    if connection:
-        cursor = connection.cursor(dictionary=True)
-        select_query = """
-            SELECT dp.*, ispu.ispu_pm10, ispu.ispu_pm25, ispu.ispu_co, ispu.ispu_hc, ispu.ispu_o3
-            FROM data_polusi dp
-            JOIN ispu_data ispu ON dp.data_id = ispu.polusi_id
-            ORDER BY dp.data_id DESC
-        """
-        cursor.execute(select_query)
-        records = cursor.fetchall()
+    cursor = connection.cursor()
+    try:
+        # Ambil data klasifikasi terbaru (tergantung pada bagaimana struktur tabel)
+        cursor.execute("SELECT timestamp, so2, no2, pm10, pm25, hc, co, o3, klasifikasi FROM klasifikasi ORDER BY timestamp DESC LIMIT 7")  # Ambil data terbaru
+        klasifikasi_data = cursor.fetchall()
+
+        # Ambil data untuk grafik
+        timestamps = [row[0] for row in klasifikasi_data]  # Ambil timestamp untuk sumbu X
+        labels = ['so2', 'no2', 'pm10', 'pm25', 'hc', 'co', 'o3']
+        datasets = []
+
+        # Sesuaikan data untuk grafik
+        for idx, label in enumerate(labels):
+            data_for_chart = [row[idx + 1] for row in klasifikasi_data]  # Ambil data berdasarkan kolom untuk grafik
+            datasets.append({
+                'label': label,
+                'data': data_for_chart,
+                'backgroundColor': 'rgba(75, 192, 192, 0.2)',
+                'borderColor': 'rgba(75, 192, 192, 1)',
+                'borderWidth': 2,
+                'tension': 0.3
+            })
+
+        # Kirimkan data klasifikasi ke template
+        return render_template('index.html', klasifikasi_data=klasifikasi_data, datasets=datasets, timestamps=timestamps)
+
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return render_template('index.html', klasifikasi_data=[], datasets=[], timestamps=[])
+
+    finally:
         cursor.close()
         connection.close()
-        return render_template('index.html', data=records)
 
-    return "Error connecting to the database", 500
 
 # Fungsi untuk mendaftar user baru
 @app.route('/sign-up', methods=['GET', 'POST'])
@@ -234,7 +381,57 @@ def add_esp():
     else:
         return jsonify({"status": "failed", "reason": "database connection error"}), 500
 
-@app.route('/edit-esp/<int:id>', methods=['PUT'])
+@app.route('/add-klasifikasi', methods=['POST'])
+def add_klasifikasi():
+    data = request.get_json()
+
+    # Ambil data dari request
+    pm10 = float(data.get('pm10', 0))
+    pm25 = float(data.get('pm25', 0))
+    co   = float(data.get('co', 0))
+    hc   = float(data.get('hc', 0))
+    o3   = float(data.get('o3', 0))
+    no2  = float(data.get('no2', 0))
+    so2  = float(data.get('so2', 0))
+
+    # Buat DataFrame untuk input model
+    input_data = pd.DataFrame([[pm10, pm25, co, hc, o3, no2, so2]],
+                              columns=['pm10', 'pm25', 'co', 'hc', 'o3', 'no2', 'so2'])
+
+    # Lakukan prediksi
+    try:
+        prediction = model.predict(input_data)
+        klasifikasi = prediction[0]  # Hasil klasifikasi
+
+        # Simpan data dan hasil ke database
+        connection = connect_db()
+        if connection:
+            cursor = connection.cursor()
+            try:
+                insert_query = """
+                    INSERT INTO klasifikasi (so2, no2, pm10, pm25, hc, co, o3, klasifikasi, timestamp)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                # Timestamp sekarang
+                current_time = datetime.now()
+
+                cursor.execute(insert_query, (so2, no2, pm10, pm25, hc, co, o3, klasifikasi, current_time))
+                connection.commit()
+
+                cursor.close()
+                connection.close()
+                return jsonify({"status": "success"}), 200
+            except Exception as e:
+                connection.rollback()
+                cursor.close()
+                connection.close()
+                return jsonify({"status": "failed", "reason": str(e)}), 500
+        else:
+            return jsonify({"status": "failed", "reason": "Database connection error"}), 500
+    except Exception as e:
+        return jsonify({"status": "failed", "reason": str(e)}), 500
+
+@app.route('/edit-esp/<id>', methods=['PUT'])
 def edit_esp(id):
     data = request.get_json()
 
@@ -249,7 +446,7 @@ def edit_esp(id):
     if connection:
         cursor = connection.cursor()
         try:
-            # Query untuk update data lokasi berdasarkan ID
+            # Query untuk update data lokasi berdasarkan esp_id (string)
             update_query = """
                 UPDATE esp
                 SET location = %s
@@ -267,15 +464,15 @@ def edit_esp(id):
             connection.close()
     else:
         return jsonify({"status": "failed", "reason": "database connection error"}), 500
-    
-@app.route('/delete-esp/<int:id>', methods=['DELETE'])
+
+
+@app.route('/delete-esp/<id>', methods=['DELETE'])
 def delete_esp(id):
-    # Koneksi ke database
     connection = connect_db()
     if connection:
         cursor = connection.cursor()
         try:
-            # Query untuk menghapus data lokasi berdasarkan ID
+            # Query untuk menghapus data berdasarkan esp_id (string)
             delete_query = """
                 DELETE FROM esp
                 WHERE esp_id = %s
@@ -285,13 +482,14 @@ def delete_esp(id):
 
             return jsonify({"status": "success"}), 200
         except Exception as e:
-            connection.rollback()  # Rollback jika ada error
+            connection.rollback()  # Rollback jika terjadi error
             return jsonify({"status": "failed", "reason": str(e)}), 500
         finally:
             cursor.close()
             connection.close()
     else:
         return jsonify({"status": "failed", "reason": "database connection error"}), 500
+
 
 
 if __name__ == '__main__':

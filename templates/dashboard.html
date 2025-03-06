@@ -22,127 +22,102 @@
   <div class="container">
     <!-- Sidebar -->
     <div class="sidebar">
-     
       <ul class="menu">
         <li class="menu-item active">
-            <img class="icon"    src="{{ url_for('static', filename='assets/icon_home.png') }}" />
-          <span>Dashboard</span>
+            <img class="icon" src="{{ url_for('static', filename='assets/icon_home.png') }}" />
+            <span>Dashboard</span>
         </li>
         <li class="menu-item" onclick="window.location.href='/lokasi'">
           <img class="icon" src="{{ url_for('static', filename='assets/icon_map.png') }}" />
           <span>Lokasi</span>
         </li>
-        
-        <!-- <li class="menu-item">
-          <img class="icon"    src="{{ url_for('static', filename='assets/icon_polusi.png') }}" />
-          <span>Polusi</span>
-        </li> -->
-        <li class="menu-item">
-            <img class="icon"    src="{{ url_for('static', filename='assets/icon_kasifikasi.png') }}" />
-          <span>Klasifikasi</span>
+        <li class="menu-item" onclick="window.location.href='/kalsifikasi'">
+            <img class="icon" src="{{ url_for('static', filename='assets/icon_kasifikasi.png') }}" />
+            <span>Klasifikasi</span>
         </li>
-       
       </ul>
-      <div class="exit">
-        <img class="icon"    src="{{ url_for('static', filename='assets/icon_exit.png') }}" />
+      <div class="exit" onclick="window.location.href='/logout'">
+        <img class="icon" src="{{ url_for('static', filename='assets/icon_exit.png') }}" />
         <span>Exit</span>
       </div>
     </div>
 
     <!-- Main Content -->
-    <div class="main-content " >
-   
-      
-        <div class="monitoring-overview">
-
-          <div class="overview-data">
-            <div class="data-card">
-              <p>Temperature</p>
-              <h3>25°C</h3>
-              <p>Today</p>
-            </div>
-            <div class="data-card">
-              <p>Humidity</p>
-              <h3>60%</h3>
-              <p>Today</p>
-            </div>
-            <div class="data-card">
-              <p>Air Pollution Image</p>
-              <h3>35%</h3>
-              <p>Today</p>
-            </div>
-            <div class="data-card">
-              <p>Air Quality</p>
-              <h3>85</h3>
-              <p>Today</p>
-            </div>
+    <div class="main-content">
+      <!-- Cards for displaying air quality -->
+      <div class="monitoring-overview">
+        <div class="overview-data">
+          <div class="data-card">
+            <p>SO2</p>
+            <h3>{{ klasifikasi_data[0][1] }}</h3> <!-- Display SO2 value -->
+            <p>{{ klasifikasi_data[0][0] }}</p> <!-- Display timestamp -->
+          </div>
+          <div class="data-card">
+            <p>NO2</p>
+            <h3>{{ klasifikasi_data[0][2] }}</h3> <!-- Display NO2 value -->
+            <p>{{ klasifikasi_data[0][0] }}</p> <!-- Display timestamp -->
+          </div>
+          <div class="data-card">
+            <p>O3</p>
+            <h3>{{ klasifikasi_data[0][3] }}</h3> <!-- Display O3 value -->
+            <p>{{ klasifikasi_data[0][0] }}</p> <!-- Display timestamp -->
+          </div>
+          <div class="data-card">
+            <p>CO</p>
+            <h3>{{ klasifikasi_data[0][4] }}</h3> <!-- Display CO value -->
+            <p>{{ klasifikasi_data[0][0] }}</p> <!-- Display timestamp -->
           </div>
         </div>
+      </div>
 
-        <div class="air-quality-chart">
-          <h3>Air Quality Chart</h3>
-          <p>Air quality index (AQI) forecast</p>
-          <canvas id="airQualityChart" width="400" height="200"></canvas>
-        </div>
-   
+      <!-- Air Quality Chart -->
+      <div class="air-quality-chart">
+        <h3>Air Quality Chart</h3>
+        <p>Air quality index (AQI) forecast</p>
+        <canvas id="airQualityChart" width="400" height="200"></canvas>
+      </div>
+    </div>
   </div>
-
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-
-const navLinks = document.querySelectorAll('.nav-links li a');
-
-navLinks.forEach(link => {
-link.addEventListener('click', () => {
-
-  navLinks.forEach(nav => nav.classList.remove('active'));
-
-  link.classList.add('active');
-});
-});
-
-const ctx = document.getElementById('airQualityChart').getContext('2d');
-const airQualityChart = new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    datasets: [{
-      label: 'AQI',
-      data: [50, 100, 250, 200, 150, 180, 120], // Dummy data
-      backgroundColor: 'rgba(75, 192, 192, 0.2)',
-      borderColor: 'rgba(75, 192, 192, 1)',
-      borderWidth: 2,
-      tension: 0.3
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: false
-      }
-    },
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Days'
-        }
+    const timestamps = {{ timestamps | tojson }};
+    const ctx = document.getElementById('airQualityChart').getContext('2d');
+    const airQualityChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: timestamps,  // Use timestamp for x-axis
+        datasets: {{ datasets | tojson }}  // Dynamic datasets injected from Flask
       },
-      y: {
-        title: {
-          display: true,
-          text: 'AQI'
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true
+          }
         },
-        min: 0,
-        max: 300
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Timestamp'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Value'
+            },
+            min: 0,
+            max: 300
+          }
+        }
       }
-    }
-  }
-});
-</script>
+    });
+  </script>
 
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
+
+
 </html>

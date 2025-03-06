@@ -46,7 +46,7 @@
           </li>
 
         </ul>
-        <div class="exit">
+        <div class="exit" onclick="window.location.href='/logout'">
           <img class="icon"
             src="{{ url_for('static', filename='assets/icon_exit.png') }}" />
           <span>Exit</span>
@@ -57,12 +57,13 @@
       <div class="main-content">
         <h1>Tabel Data</h1>
         <div class="table-actions">
-          <button class="btn add-btn" id="openModalBtn">
+          <button class="btn add-btn" id="openAddModalBtn">
             <img class="icon"
               src="{{ url_for('static', filename='assets/add-button.png') }}"
               alt="Tambah Icon" />
             Tambah
           </button>
+
         </div>
         <table>
           <thead>
@@ -75,27 +76,32 @@
           <tbody>
             {% for lokasi in lokasi_list %}
             <tr>
-              <td>{{ lokasi.esp_id }}</td>
-              <td>{{ lokasi.location }}</td>
+              <td>{{ lokasi[0] }}</td> <!-- Mengakses esp_id (indeks 0) -->
+              <td>{{ lokasi[1] }}</td> <!-- Mengakses location (indeks 1) -->
               <td>
+                <!-- Tombol Edit -->
                 <button class="btn edit-btn"
-                  onclick="openEditModal('{{ lokasi.esp_id }}', '{{ lokasi.location }}')">
+                  onclick="openEditModal('{{ lokasi[0] }}', '{{ lokasi[1] }}')">
                   <img class="icon"
                     src="{{ url_for('static', filename='assets/edit.png') }}"
                     alt="Edit Icon" />
                   Edit
                 </button>
+
+                <!-- Tombol Delete -->
                 <button class="btn delete-btn"
-                  onclick="openDeleteModal('{{ lokasi.id }}', '{{ lokasi.nama }}')">
+                  onclick="openDeleteModal('{{ lokasi[0] }}', '{{ lokasi[1] }}')">
                   <img class="icon"
                     src="{{ url_for('static', filename='assets/delete.png') }}"
                     alt="Delete Icon" />
                   Delete
                 </button>
+
               </td>
             </tr>
             {% endfor %}
           </tbody>
+
         </table>
 
       </div>
@@ -121,6 +127,7 @@
         </form>
       </div>
     </div>
+    <div id="message" style="color: green; font-weight: bold; margin-bottom: 10px;"></div>
 
     <!-- Modal Edit Data -->
     <div class="modal" id="editModal">
@@ -142,11 +149,9 @@
       </div>
     </div>
 
-    <!-- Modal Delete -->
     <!-- Modal Konfirmasi Hapus -->
     <div class="modal" id="deleteModal">
       <div class="modal-content">
-        <!-- Tombol Close -->
         <span class="close-btn" id="closeDeleteModalBtn">&times;</span>
         <h2>Konfirmasi Hapus</h2>
         <p>Apakah Anda yakin ingin menghapus lokasi <strong
@@ -162,82 +167,31 @@
     </div>
 
     <script>
-      // Membuka Modal
-      document.getElementById('openAddModalBtn').addEventListener('click', function() {
-        document.getElementById('addModal').style.display = 'block';
-      });
-    
-      // Menutup Modal
-      document.getElementById('closeModalBtn').addEventListener('click', function() {
-        document.getElementById('addModal').style.display = 'none';
-      });
-    
-      // Kirim Data Form ke Server
-      document.getElementById('addForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-    
-        const id = document.getElementById('id').value;
-        const nama = document.getElementById('nama').value;
-    
-        // Data yang akan dikirim
-        const data = {
-          id: id,
-          nama: nama
-        };
-    
-        // Mengirim data dengan AJAX
-        fetch('/add-esp', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
-          if (result.status === 'success') {
-            alert('Lokasi berhasil ditambahkan');
-            document.getElementById('addModal').style.display = 'none';
-            document.getElementById('addForm').reset(); // Reset form
-          } else {
-            alert('Gagal menambahkan lokasi: ' + result.reason);
-          }
-        })
-        .catch(error => {
-          alert('Error: ' + error);
-        });
-      });
-    </script>
-
-    <script>
-  // Menutup Modal Edit
-  document.getElementById('closeEditModalBtn').addEventListener('click', function() {
-    document.getElementById('editModal').style.display = 'none';
+  // Fungsi untuk membuka modal tambah data
+  document.getElementById('openAddModalBtn').addEventListener('click', function() {
+    document.getElementById('addModal').style.display = 'block';  // Buka modal tambah
   });
 
-  // Fungsi untuk membuka modal edit dengan data yang ada
-  function openEditModal(id, nama) {
-    document.getElementById('edit-id').value = id;   // Set ID
-    document.getElementById('edit-nama').value = nama; // Set Nama Lokasi
-    document.getElementById('editModal').style.display = 'block'; // Buka modal
-  }
+  // Fungsi untuk menutup modal tambah
+  document.getElementById('closeModalBtn').addEventListener('click', function() {
+    document.getElementById('addModal').style.display = 'none';  // Tutup modal tambah
+  });
 
-  // Mengirimkan data edit ke server
-  document.getElementById('editForm').addEventListener('submit', function(event) {
-    event.preventDefault();
+  // Kirim Data Form Tambah Lokasi
+  document.getElementById('addForm').addEventListener('submit', function(event) {
+    event.preventDefault();  // Mencegah halaman reload
 
-    const id = document.getElementById('edit-id').value;
-    const nama = document.getElementById('edit-nama').value;
+    const id = document.getElementById('id').value;
+    const nama = document.getElementById('nama').value;
 
-    // Data yang akan dikirim untuk update
     const data = {
       id: id,
       nama: nama
     };
 
-    // Mengirimkan data dengan AJAX (fetch)
-    fetch(`/edit-esp/${id}`, {
-      method: 'PUT', // Menggunakan PUT untuk update data
+    // Mengirim data dengan AJAX (fetch)
+    fetch('/add-esp', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -246,41 +200,92 @@
     .then(response => response.json())
     .then(result => {
       if (result.status === 'success') {
-        alert('Lokasi berhasil diperbarui');
-        document.getElementById('editModal').style.display = 'none'; // Tutup modal
-        // Update UI (misalnya, table) jika perlu
+        alert('Lokasi berhasil ditambahkan');
+        document.getElementById('addModal').style.display = 'none';
+        document.getElementById('addForm').reset();  // Reset form
+        location.reload();  // Reload halaman untuk melihat perubahan
       } else {
-        alert('Gagal memperbarui lokasi: ' + result.reason);
+        alert('Gagal menambahkan lokasi: ' + result.reason);
       }
     })
     .catch(error => {
       alert('Error: ' + error);
     });
   });
-</script>
 
-    <script>
-  // Menutup Modal Hapus
+  function openEditModal(id, nama) {
+    // Mengisi form modal edit dengan data yang dipilih
+    document.getElementById('edit-id').value = id;     // Set nilai ID
+    document.getElementById('edit-nama').value = nama;   // Set nilai Nama Lokasi
+    // Tampilkan modal edit
+    document.getElementById('editModal').style.display = 'block';
+  }
+
+  // Fungsi untuk menutup modal edit
+  document.getElementById('closeEditModalBtn').addEventListener('click', function() {
+    document.getElementById('editModal').style.display = 'none';
+  });
+
+  // Mengirim data edit ke server melalui form edit
+  document.getElementById('editForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Mencegah refresh halaman
+
+    const id = document.getElementById('edit-id').value;
+    const nama = document.getElementById('edit-nama').value;
+
+    const data = { nama: nama }; // Data yang akan dikirim (hanya nama karena id tidak boleh diubah)
+
+    // Mengirim data menggunakan fetch dengan metode PUT
+    fetch(`/edit-esp/${id}`, {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(data)
+})
+.then(response => response.json())
+.then(result => {
+  if (result.status === 'success') {
+    // Tutup modal edit
+    document.getElementById('editModal').style.display = 'none';
+    // Tampilkan pesan sukses di elemen #message
+    document.getElementById('message').textContent = 'Lokasi berhasil diubah';
+    // Optional: Hapus pesan dan reload halaman setelah 2 detik
+    setTimeout(() => {
+      document.getElementById('message').textContent = '';
+      location.reload();  // Reload halaman untuk melihat perubahan
+    }, 2000);
+  } else {
+    alert('Gagal memperbarui lokasi: ' + result.reason);
+  }
+})
+.catch(error => {
+  alert('Error: ' + error);
+});
+
+  });
+
+  // Fungsi untuk membuka modal hapus dengan menampilkan nama dan ID lokasi yang ingin dihapus
+  function openDeleteModal(id, nama) {
+    document.getElementById('delete-nama').textContent = nama; // Tampilkan nama lokasi pada modal hapus
+    document.getElementById('delete-id').value = id;            // Set nilai ID lokasi untuk penghapusan
+    document.getElementById('deleteModal').style.display = 'block'; // Tampilkan modal hapus
+  }
+
+  // Fungsi untuk menutup modal hapus
   document.getElementById('closeDeleteModalBtn').addEventListener('click', function() {
     document.getElementById('deleteModal').style.display = 'none';
   });
 
-  // Fungsi untuk membuka modal hapus dengan nama dan ID lokasi yang ingin dihapus
-  function openDeleteModal(id, nama) {
-    document.getElementById('delete-nama').textContent = nama; // Set Nama Lokasi
-    document.getElementById('delete-id').value = id; // Set ID untuk dikirimkan ke server
-    document.getElementById('deleteModal').style.display = 'block'; // Buka modal
-  }
-
-  // Mengirimkan data untuk menghapus lokasi
+  // Mengirim data penghapusan ke server melalui form hapus
   document.getElementById('deleteForm').addEventListener('submit', function(event) {
-    event.preventDefault();
+    event.preventDefault(); // Mencegah refresh halaman
 
     const id = document.getElementById('delete-id').value;
 
-    // Mengirimkan request dengan fetch untuk menghapus data berdasarkan ID
+    // Mengirim request DELETE ke server
     fetch(`/delete-esp/${id}`, {
-      method: 'DELETE', // Menggunakan DELETE untuk menghapus data
+      method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
       }
@@ -289,8 +294,8 @@
     .then(result => {
       if (result.status === 'success') {
         alert('Lokasi berhasil dihapus');
-        document.getElementById('deleteModal').style.display = 'none'; // Tutup modal
-        // Update UI (misalnya, tabel lokasi) jika perlu
+        document.getElementById('deleteModal').style.display = 'none';
+        location.reload(); // Reload halaman untuk melihat perubahan
       } else {
         alert('Gagal menghapus lokasi: ' + result.reason);
       }
@@ -301,6 +306,5 @@
   });
 </script>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   </body>
 </html>
