@@ -438,6 +438,79 @@ def add_esp():
     else:
         return jsonify({"status": "failed", "reason": "database connection error"}), 500
 
+# =========================
+ISPU_TABLES = {
+    'pm10': [
+        {'I_min': 0, 'I_max': 50, 'X_min': 0, 'X_max': 50},
+        {'I_min': 51, 'I_max': 100, 'X_min': 51, 'X_max': 150},
+        {'I_min': 101, 'I_max': 200, 'X_min': 151, 'X_max': 350},
+        {'I_min': 201, 'I_max': 300, 'X_min': 351, 'X_max': 420},
+        {'I_min': 301, 'I_max': 400, 'X_min': 421, 'X_max': 500},
+        {'I_min': 401, 'I_max': 500, 'X_min': 501, 'X_max': 600},
+    ],
+    'pm25': [
+        {'I_min': 0, 'I_max': 50, 'X_min': 0, 'X_max': 15.5},
+        {'I_min': 51, 'I_max': 100, 'X_min': 15.6, 'X_max': 55.4},
+        {'I_min': 101, 'I_max': 200, 'X_min': 55.5, 'X_max': 150.4},
+        {'I_min': 201, 'I_max': 300, 'X_min': 150.5, 'X_max': 250.4},
+        {'I_min': 301, 'I_max': 400, 'X_min': 250.5, 'X_max': 350.4},
+        {'I_min': 401, 'I_max': 500, 'X_min': 350.5, 'X_max': 500.4},
+    ],
+    'co': [
+        {'I_min': 0, 'I_max': 50, 'X_min': 0, 'X_max': 4000},
+        {'I_min': 51, 'I_max': 100, 'X_min': 4001, 'X_max': 8000},
+        {'I_min': 101, 'I_max': 200, 'X_min': 8001, 'X_max': 15000},
+        {'I_min': 201, 'I_max': 300, 'X_min': 15001, 'X_max': 30000},
+        {'I_min': 301, 'I_max': 400, 'X_min': 30001, 'X_max': 45000},
+    ],
+    'so2': [
+        {'I_min': 0, 'I_max': 50, 'X_min': 0, 'X_max': 52},
+        {'I_min': 51, 'I_max': 100, 'X_min': 52, 'X_max': 180},
+        {'I_min': 101, 'I_max': 200, 'X_min': 180, 'X_max': 400},
+        {'I_min': 201, 'I_max': 300, 'X_min': 400, 'X_max': 800},
+        {'I_min': 301, 'I_max': 400, 'X_min': 800, 'X_max': 1200},
+        {'I_min': 401, 'I_max': 500, 'X_min': 1200, 'X_max': 1600},
+    ],
+
+    'no2': [
+        {'I_min': 0, 'I_max': 50, 'X_min': 0, 'X_max': 80},
+        {'I_min': 51, 'I_max': 100, 'X_min': 81, 'X_max': 200},
+        {'I_min': 101, 'I_max': 200, 'X_min': 201, 'X_max': 1130},
+        {'I_min': 201, 'I_max': 300, 'X_min': 1131, 'X_max': 2260},
+        {'I_min': 301, 'I_max': 400, 'X_min': 2261, 'X_max': 3000},
+    ],
+    'o3': [
+        {'I_min': 0, 'I_max': 50, 'X_min': 0, 'X_max': 120},
+        {'I_min': 51, 'I_max': 100, 'X_min': 121, 'X_max': 235},
+        {'I_min': 101, 'I_max': 200, 'X_min': 236, 'X_max': 400},
+        {'I_min': 201, 'I_max': 300, 'X_min': 401, 'X_max': 800},
+        {'I_min': 301, 'I_max': 400, 'X_min': 801, 'X_max': 1000},
+    ],
+    'hc': [
+        {'I_min': 0, 'I_max': 50, 'X_min': 0, 'X_max': 45},
+        {'I_min': 51, 'I_max': 100, 'X_min': 46, 'X_max': 100},
+        {'I_min': 101, 'I_max': 200, 'X_min': 101, 'X_max': 215},
+        {'I_min': 201, 'I_max': 300, 'X_min': 216, 'X_max': 432},
+        {'I_min': 301, 'I_max': 400, 'X_min': 433, 'X_max': 648},
+    ]
+}
+
+# =========================
+# Fungsi Hitung ISPU
+# =========================
+def calculate_ispu(value, table):
+    for row in table:
+        if row['X_min'] <= value <= row['X_max']:
+            I_min = row['I_min']
+            I_max = row['I_max']
+            X_min = row['X_min']
+            X_max = row['X_max']
+            return ((I_max - I_min) / (X_max - X_min)) * (value - X_min) + I_min
+    return 500  # Return maksimum jika melebihi batas
+
+# =========================
+# Endpoint
+# =========================
 @app.route('/add-klasifikasi', methods=['POST'])
 def add_klasifikasi():
     data = request.get_json()
@@ -451,38 +524,52 @@ def add_klasifikasi():
     no2  = float(data.get('no2', 0))
     so2  = float(data.get('so2', 0))
 
-    # Buat DataFrame untuk input model
-    input_data = pd.DataFrame([[pm10, pm25, co, hc, o3, no2, so2]],
-                              columns=['pm10', 'pm25', 'co', 'hc', 'o3', 'no2', 'so2'])
+    # Hitung ISPU masing-masing parameter
+    ispu_pm10 = calculate_ispu(pm10, ISPU_TABLES['pm10'])
+    ispu_pm25 = calculate_ispu(pm10, ISPU_TABLES['pm25'])
+    ispu_co   = calculate_ispu(co, ISPU_TABLES['co'])
+    ispu_hc   = calculate_ispu(hc, ISPU_TABLES['hc'])
+    ispu_o3   = calculate_ispu(o3, ISPU_TABLES['o3'])
+    ispu_so2  = calculate_ispu(so2, ISPU_TABLES['so2'])
+    ispu_no2  = calculate_ispu(no2, ISPU_TABLES['no2'])
 
-    # Lakukan prediksi
+    # Data untuk model
+    input_data = pd.DataFrame([[ispu_pm10, ispu_pm25, ispu_co, ispu_hc, ispu_o3, ispu_no2, ispu_so2]],
+                            columns=['pm10', 'pm25', 'co', 'hc', 'o3', 'no2', 'so2'])
+
     try:
         prediction = model.predict(input_data)
-        klasifikasi = prediction[0]  # Hasil klasifikasi
+        klasifikasi = prediction[0]
 
-        # Simpan data dan hasil ke database
+        # Simpan ke database
         connection = connect_db()
         if connection:
             cursor = connection.cursor()
-            try:
-                insert_query = """
-                    INSERT INTO klasifikasi (so2, no2, pm10, pm25, hc, co, o3, klasifikasi, timestamp)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """
-                # Timestamp sekarang
-                current_time = datetime.now()
+            insert_query = """
+                INSERT INTO klasifikasi (so2, no2, pm10, pm25, hc, co, o3, klasifikasi, timestamp)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            current_time = datetime.now()
+            cursor.execute(insert_query, (
+                so2, no2, pm10, pm25, hc, co, o3, klasifikasi, current_time
+            ))
+            connection.commit()
+            cursor.close()
+            connection.close()
 
-                cursor.execute(insert_query, (so2, no2, pm10, pm25, hc, co, o3, klasifikasi, current_time))
-                connection.commit()
-
-                cursor.close()
-                connection.close()
-                return jsonify({"status": "success"}), 200
-            except Exception as e:
-                connection.rollback()
-                cursor.close()
-                connection.close()
-                return jsonify({"status": "failed", "reason": str(e)}), 500
+            return jsonify({
+                "status": "success",
+                "ispu": {
+                    "PM10": ispu_pm10,
+                    "PM25": ispu_pm25,
+                    "CO": ispu_co,
+                    "HC": ispu_hc,
+                    "O3": ispu_o3,
+                    "SO2": ispu_so2,
+                    "NO2": ispu_no2
+                },
+                "klasifikasi": klasifikasi
+            }), 200
         else:
             return jsonify({"status": "failed", "reason": "Database connection error"}), 500
     except Exception as e:
